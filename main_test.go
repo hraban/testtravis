@@ -10,4 +10,7 @@ func TestDoSomething(t *testing.T) {
 	if 0 == 1 {
 		t.Fatal("Wow, that is unexpected.")
 	}
+	if 1 == 1 {
+		t.Log("Yay")
+	}
 }
