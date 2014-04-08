@@ -18,9 +18,10 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-package lrucache
+package lrucache_finalizertest
 
 import (
+	"log"
 	"runtime"
 	"testing"
 	"time"
@@ -35,14 +36,18 @@ func leakingGoroutinesHelper() {
 	//time.AfterFunc(10*time.Second, func() { _ = c })
 }
 
+func finalizeInt(p *int) {
+	log.Print("Finalizing ", *p)
+}
+
 func runFinalizer() {
 	i := 3
-	runtime.SetFinalizer(&i, func(i *int) {})
-	time.Sleep(time.Millisecond)
+	runtime.SetFinalizer(&i, finalizeInt)
 }
 
 func TestLeakingGoroutines(t *testing.T) {
 	runFinalizer()
+	time.Sleep(time.Millisecond)
 	n := runtime.NumGoroutine()
 	for i := 0; i < 30; i++ {
 		leakingGoroutinesHelper()

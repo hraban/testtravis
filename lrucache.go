@@ -18,46 +18,10 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-// Light-weight in-memory LRU (object) cache library for Go.
+// Reduced code to test finalizers for lrucache project
 //
-// To use this library, first create a cache:
-//
-//      c := lrucache.New(1234)
-//
-// Then, optionally, define a type that implements some of the interfaces:
-//
-//      type cacheableInt int
-//
-//      func (i cacheableInt) OnPurge(why lrucache.PurgeReason) {
-//          fmt.Printf("Purging %d\n", i)
-//      }
-//
-// Finally:
-//
-//     for i := 0; i < 2000; i++ {
-//         c.Set(strconv.Itoa(i), cacheableInt(i))
-//     }
-//
-// This will generate the following output:
-//
-//     Purging 0
-//     Purging 1
-//     ...
-//     Purging 764
-//     Purging 765
-//
-// Note:
-//
-// * The unit of item sizes is not defined; whatever it is, once the sum
-// exceeds the maximum cache size, elements start getting purged until it
-// drops below the threshold again.
-//
-// * These integers are passed by value. Caching pointers is, of course, Okay,
-// but be careful when caching a memory location that holds two different
-// values at different points in time; updating the value of a pointer after
-// caching it will change the cached value.
-//
-package lrucache
+// See https://github.com/hraban/lrucache
+package lrucache_finalizertest
 
 import (
 	"log"
