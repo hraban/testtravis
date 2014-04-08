@@ -312,9 +312,33 @@ func directGet(c *Cache, req reqGet) {
 	return
 }
 
-// split off into separate function to ensure c goes out of scope
-func mainLoopBody(op operation) {
-	c := op.c // careful: don't keep this one around!
+// Consume an operation from the channel and process it. Returns false if the
+// channel was closed and the main loop should stop.
+//
+// Implemented as a separate function to ensure all local variables go out of
+// scope when this main loop iteration is complete.
+//
+// Imagine this function accepted an operation directly and the mainLoop
+// function were implemented as follows:
+//
+//     for op := range opchan {
+//         mainLoopBody(op)
+//     }
+//
+// This blocks on the read from opchan, but it is not immediately clear if the
+// operation from the last iteration (haha) is cleared / garbage collected while
+// this read is blocking. Because the operation struct contains a reference to
+// the Cache, if that doesn't happen the entire cache will not be garbage
+// collected.
+//
+// As it turns out the suggested behavior works on my machine but failed on
+// Travis-CI. This new everything-local implementation works on both.
+func mainLoopBody(opchan <-chan operation) bool {
+	op, ok := <-opchan
+	if !ok {
+		return false
+	}
+	c := op.c
 	switch req := op.req.(type) {
 	case reqSet:
 		directSet(c, req)
@@ -333,12 +357,12 @@ func mainLoopBody(op operation) {
 	default:
 		panic("Illegal cache operation")
 	}
+	return true
 }
 
 // does not keep any reference to the cache so it can be garbage collected
 func mainLoop(opchan <-chan operation) {
-	for op := range opchan {
-		mainLoopBody(op)
+	for mainLoopBody(opchan) {
 	}
 }
 
