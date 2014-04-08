@@ -448,14 +448,16 @@ func (c *Cache) Size() int64 {
 	return <-reply
 }
 
+func finalizeCache(c *Cache) {
+	close(c.opChan)
+}
+
 // Create and initialize a new cache, ready for use.
 func New(maxsize int64) *Cache {
 	var mem Cache
 	c := &mem
 	c.Init(maxsize)
-	runtime.SetFinalizer(c, func(c *Cache) {
-		close(c.opChan)
-	})
+	runtime.SetFinalizer(c, finalizeCache)
 	return c
 }
 

@@ -34,26 +34,27 @@ func leakingGoroutinesHelper() {
 	//time.AfterFunc(10*time.Second, func() { _ = c })
 }
 
+func runFinalizer() {
+	i := 3
+	runtime.SetFinalizer(&i, func(i *int) {})
+	time.Sleep(time.Millisecond)
+}
+
 func TestLeakingGoroutines(t *testing.T) {
+	runFinalizer()
 	n := runtime.NumGoroutine()
 	for i := 0; i < 100; i++ {
 		leakingGoroutinesHelper()
 	}
 	// seduce the garbage collector
-	starttime := time.Now()
-	for time.Since(starttime) < 5*time.Second {
-		time.Sleep(time.Second)
-		runtime.GC()
-		runtime.Gosched()
-	}
+	time.Sleep(time.Second)
+	runtime.GC()
+	runtime.Gosched()
+	time.Sleep(time.Second)
 	n2 := runtime.NumGoroutine()
 	leak := n2 - n
-	// TODO: Why is this 1 no matter how many caches are created and cleaned up?
-	// To see what I mean run this test in isolation (go test -run TestLeak);
-	// leak will always be exactly 1.  When run alongside other tests their
-	// garbage is also cleaned up here so leak can be less than 0---that's okay.
-	if leak > 1 { // I'd like to test >0 here :(
+	if leak > 0 {
 		t.Error("leaking goroutines:", leak)
-		//panic("dumping goroutine stacks")
+		panic("dumping goroutine stacks")
 	}
 }
