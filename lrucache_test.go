@@ -257,10 +257,12 @@ func TestLeakingGoroutines(t *testing.T) {
 		leakingGoroutinesHelper()
 	}
 	// seduce the garbage collector
-	time.Sleep(time.Second)
-	runtime.GC()
-	runtime.Gosched()
-	time.Sleep(time.Second)
+	starttime := time.Now()
+	for time.Since(starttime) < 5*time.Second {
+		time.Sleep(time.Second)
+		runtime.GC()
+		runtime.Gosched()
+	}
 	n2 := runtime.NumGoroutine()
 	leak := n2 - n
 	// TODO: Why is this 1 no matter how many caches are created and cleaned up?
