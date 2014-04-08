@@ -56,7 +56,7 @@ func TestLeakingGoroutines(t *testing.T) {
 	var x int
 	for time.Since(starttime) < 5*time.Second {
 		// do some crazy heap stuff
-		func(buf []byte) {
+		go func(buf []byte) {
 			x = copy(make([]byte, len(buf)), buf)
 		}(make([]byte, 1<<16))
 		runtime.Gosched()
