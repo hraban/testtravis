@@ -28,8 +28,9 @@ import (
 
 // create some channels and let them go out of scope
 func leakingGoroutinesHelper() {
-	c := New(100)
-	c.Set("foo", 123)
+	c := New()
+	c.Msg("foo")
+	c.Msg("bar")
 	// keep it around!
 	//time.AfterFunc(10*time.Second, func() { _ = c })
 }
@@ -43,7 +44,7 @@ func runFinalizer() {
 func TestLeakingGoroutines(t *testing.T) {
 	runFinalizer()
 	n := runtime.NumGoroutine()
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 30; i++ {
 		leakingGoroutinesHelper()
 	}
 	// seduce the garbage collector
