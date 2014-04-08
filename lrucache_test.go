@@ -32,11 +32,10 @@ func leakingGoroutinesHelper() {
 	c := New()
 	c.Msg("foo")
 	c.Msg("bar")
-	// keep it around!
-	//time.AfterFunc(10*time.Second, func() { _ = c })
 }
 
 func finalizeInt(p *int) {
+	// see if finalizing works at all
 	log.Print("Finalizing ", *p)
 }
 
@@ -53,10 +52,17 @@ func TestLeakingGoroutines(t *testing.T) {
 		leakingGoroutinesHelper()
 	}
 	// seduce the garbage collector
-	time.Sleep(time.Second)
-	runtime.GC()
-	runtime.Gosched()
-	time.Sleep(time.Second)
+	starttime := time.Now()
+	var x int
+	for time.Since(starttime) < 5*time.Second {
+		// do some crazy heap stuff
+		func(buf []byte) {
+			x = copy(make([]byte, len(buf)), buf)
+		}(make([]byte, 1<<16))
+		runtime.Gosched()
+		runtime.GC()
+		time.Sleep(500 * time.Millisecond)
+	}
 	n2 := runtime.NumGoroutine()
 	leak := n2 - n
 	if leak > 0 {
