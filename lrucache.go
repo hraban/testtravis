@@ -25,7 +25,6 @@ package lrucache_finalizertest
 
 import (
 	"log"
-	"runtime"
 )
 
 type Cache struct {
@@ -94,11 +93,16 @@ func finalizeCache(c *Cache) {
 	close(c.opChan)
 }
 
+func (c *Cache) Close() error {
+	finalizeCache(c)
+	return nil
+}
+
 // Create and initialize a new cache, ready for use.
 func New() *Cache {
 	var mem Cache
 	c := &mem
 	c.Init()
-	runtime.SetFinalizer(c, finalizeCache)
+	//runtime.SetFinalizer(c, finalizeCache)
 	return c
 }

@@ -30,6 +30,7 @@ import (
 // create some channels and let them go out of scope
 func leakingGoroutinesHelper() {
 	c := New()
+	defer c.Close()
 	c.Msg("foo")
 	c.Msg("bar")
 }
