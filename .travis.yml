@@ -1,2 +1,2 @@
-language: go
-go: 1.2
+install: curl -L http://httpbin.org/cache/6000
+test: true
