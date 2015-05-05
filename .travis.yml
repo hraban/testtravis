@@ -1,2 +1,5 @@
-language: go
-go: 1.2
+install:
+- apt-get update
+- apt-get install cmake
+- cmake --version
+- exit 1
