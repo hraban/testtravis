@@ -1,5 +1,5 @@
 install:
-- sudo apt-get update
-- sudo apt-get install cmake
+- curl -L 'http://www.cmake.org/files/v2.8/cmake-2.8.10.2-Linux-i386.sh' | sh
+- which cmake
 - cmake --version
 - exit 1
